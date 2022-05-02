@@ -1,7 +1,10 @@
 package user
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -16,11 +19,16 @@ func Controller() http.Handler {
 				http.StatusOK,
 				gin.H{
 					"code":  http.StatusOK,
-					"error": "Welcome server 01",
+					"error": "Welcome Service User!",
 				},
 			)
 		})
 
+		v1.POST("/login/:code", func(context *gin.Context) {
+			code := context.Param("code")
+			log.Println("code is ", code)
+			ServiceLogin(code, context)
+		})
 	}
 
 	v2 := e.Group("work")
@@ -31,4 +39,14 @@ func Controller() http.Handler {
 	}
 
 	return e
+}
+
+func parseResponse(response *http.Response) (map[string]interface{}, error) {
+	var result map[string]interface{}
+	body, err := ioutil.ReadAll(response.Body)
+	if err == nil {
+		err = json.Unmarshal(body, &result)
+	}
+
+	return result, err
 }
