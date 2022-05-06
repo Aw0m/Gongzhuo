@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func Controller() http.Handler {
@@ -24,16 +25,43 @@ func Controller() http.Handler {
 			)
 		})
 
+		// 登录
 		v1.POST("/login/:code", func(context *gin.Context) {
 			code := context.Param("code")
+			userName := context.PostForm("userName")
 			log.Println("code is ", code)
-			ServiceLogin(code, context)
+			ServiceLogin(code, userName, context)
+		})
+
+		// 更新用户名
+		v1.POST("/userName/:openid", func(context *gin.Context) {
+			openid := context.Param("openid")
+			userName := context.PostForm("userName")
+			ServiceUpdateUserName(openid, userName, context)
 		})
 	}
 
-	v2 := e.Group("work")
+	v2 := e.Group("/team")
 	{
-		v2.GET("/", func(context *gin.Context) {
+		v2.POST("/createTeam/:openid", func(context *gin.Context) {
+			openid := context.Param("openid")
+			teamName := context.PostForm("teamName")
+			ServiceCreateTeam(openid, teamName, context)
+		})
+
+		v2.POST("/updateTeam/:teamID", func(context *gin.Context) {
+			teamID := context.Param("teamID")
+			teamName := context.PostForm("teamName")
+			if teamID, err := strconv.ParseInt(teamID, 10, 64); err != nil {
+				context.JSON(
+					http.StatusNotFound,
+					gin.H{
+						"msg": "error",
+					},
+				)
+			} else {
+				ServiceUpdateTeam(teamID, teamName, context)
+			}
 
 		})
 	}

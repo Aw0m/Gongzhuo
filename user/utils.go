@@ -13,7 +13,7 @@ type MyCustomClaims struct {
 
 var mySigningKey = []byte("dev123")
 
-const duration = 1
+const duration = 24 * 30
 
 func createToken(userId string, userName string) string {
 	myToken := jwt.NewWithClaims(jwt.SigningMethodHS256, MyCustomClaims{
