@@ -49,15 +49,15 @@ func updateUser(userID string, userName string) error {
 	return nil
 }
 
-func createTeam(userID, teamName string) error {
+func createTeam(userID, teamName string) (int64, error) {
 	utils.SetMachineId(0)
 	teamID := utils.GetSnowflakeId()
 	_, err := db.Exec("INSERT INTO team (teamID, teamName, creatorID) VALUE (?, ?, ?)", teamID, teamName, userID)
 	if err != nil {
 		log.Println("create team，出现错误！")
-		return fmt.Errorf("add: %v", err)
+		return -1, fmt.Errorf("add: %v", err)
 	}
-	return nil
+	return teamID, nil
 }
 
 func updateTeam(teamID int64, teamName string) error {
@@ -91,7 +91,7 @@ func initMySQL() {
 
 func initRedis() {
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     "175.24.163.131:6379",
+		Addr:     "175.24.163.131:6380",
 		Password: "123456", // no password set
 		DB:       0,        // use default DB
 	})
