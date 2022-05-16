@@ -39,6 +39,11 @@ func Controller() http.Handler {
 			userName := context.PostForm("userName")
 			ServiceUpdateUserName(openid, userName, context)
 		})
+		// 获得用户名
+		v1.GET("/userName/:openid", func(context *gin.Context) {
+			openid := context.Param("openid")
+			ServiceSelectUserName(openid, context)
+		})
 	}
 
 	v2 := e.Group("/team")
