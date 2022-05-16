@@ -15,6 +15,7 @@ func ServiceLogin(code, userName string, context *gin.Context) {
 	var httpCode int
 	var resError any
 	var token string
+	var openid string
 
 	timeStart := time.Now()
 	// 通过code获取用户的唯一标识符openid
@@ -26,8 +27,10 @@ func ServiceLogin(code, userName string, context *gin.Context) {
 		body, _ := parseResponse(res)
 		httpCode = http.StatusOK
 		resError = body["errcode"]
-		openid := body["openid"]
-		if openid, ok := openid.(string); ok {
+		openidAny := body["openid"]
+
+		var ok bool
+		if openid, ok = openidAny.(string); ok {
 			// 生成token。如果数据库里没有该用户，则在该数据库生成该user
 			token = createToken(openid, openid)
 			if _, err := selectUser(openid); err == sql.ErrNoRows {
@@ -46,8 +49,9 @@ func ServiceLogin(code, userName string, context *gin.Context) {
 	context.JSON(
 		httpCode,
 		gin.H{
-			"error": resError,
-			"token": token,
+			"error":  resError,
+			"token":  token,
+			"openid": openid,
 		},
 	)
 }
@@ -69,22 +73,44 @@ func ServiceUpdateUserName(openid, userName string, context *gin.Context) {
 			},
 		)
 	}
-
 }
 
-func ServiceCreateTeam(openid, teamName string, context *gin.Context) {
-	if err := createTeam(openid, teamName); err == nil {
+// ServiceSelectUserName 获得用户的昵称
+func ServiceSelectUserName(openid string, context *gin.Context) {
+	if user, err := selectUser(openid); err == nil {
 		context.JSON(
 			http.StatusOK,
 			gin.H{
-				"msg": "ok",
+				"msg":      "ok",
+				"userName": user.userName,
 			},
 		)
 	} else {
 		context.JSON(
 			http.StatusServiceUnavailable,
 			gin.H{
-				"msg": "error",
+				"msg":      "error",
+				"userName": "",
+			},
+		)
+	}
+}
+
+func ServiceCreateTeam(openid, teamName string, context *gin.Context) {
+	if teamID, err := createTeam(openid, teamName); err == nil {
+		context.JSON(
+			http.StatusOK,
+			gin.H{
+				"msg":    "ok",
+				"teamID": teamID,
+			},
+		)
+	} else {
+		context.JSON(
+			http.StatusServiceUnavailable,
+			gin.H{
+				"msg":    "error",
+				"teamID": -1,
 			},
 		)
 	}
