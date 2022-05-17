@@ -1,22 +1,10 @@
 package user
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
-	"github.com/go-redis/redis/v8"
-	"github.com/go-sql-driver/mysql"
 	"log"
-	"wxProjectDev/utils"
 )
-
-var db *sql.DB
-var rdb *redis.Client
-
-func init() {
-	initMySQL()
-	initRedis()
-}
 
 func createUser(userID string, userName string) error {
 	_, err := db.Exec("INSERT INTO user (userID, userName) VALUE (?, ?)", userID, userName)
@@ -47,61 +35,4 @@ func updateUser(userID string, userName string) error {
 		return fmt.Errorf("add: %v", err)
 	}
 	return nil
-}
-
-func createTeam(userID, teamName string) (int64, error) {
-	utils.SetMachineId(0)
-	teamID := utils.GetSnowflakeId()
-	_, err := db.Exec("INSERT INTO team (teamID, teamName, creatorID) VALUE (?, ?, ?)", teamID, teamName, userID)
-	if err != nil {
-		log.Println("create team，出现错误！")
-		return -1, fmt.Errorf("add: %v", err)
-	}
-	return teamID, nil
-}
-
-func updateTeam(teamID int64, teamName string) error {
-	_, err := db.Exec("UPDATE team SET teamName = ? WHERE teamID = ?", teamName, teamID)
-	if err != nil {
-		log.Println("update team，出现错误！")
-		return fmt.Errorf("add: %v", err)
-	}
-	return nil
-}
-
-func initMySQL() {
-	cfg := mysql.Config{
-		User:   "root",
-		Passwd: "lx2001812xx",
-		Net:    "tcp",
-		Addr:   "127.0.0.1:3306",
-		DBName: "wxproject_dev",
-	}
-	var err error
-	db, err = sql.Open("mysql", cfg.FormatDSN())
-	if err != nil {
-		log.Fatal(nil)
-	}
-	pingErr := db.Ping()
-	if pingErr != nil {
-		log.Fatal(pingErr)
-	}
-	fmt.Println("Connected!")
-}
-
-func initRedis() {
-	rdb = redis.NewClient(&redis.Options{
-		Addr:     "175.24.163.131:6380",
-		Password: "123456", // no password set
-		DB:       0,        // use default DB
-	})
-	ctx := context.Background()
-	val, err := rdb.Get(ctx, "key").Result()
-	if err == redis.Nil {
-		fmt.Println("key2 does not exist")
-	} else if err != nil {
-		panic(err)
-	} else {
-		fmt.Println("key2", val)
-	}
 }

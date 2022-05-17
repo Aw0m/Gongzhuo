@@ -69,8 +69,38 @@ func Controller() http.Handler {
 			}
 
 		})
-	}
 
+		v2.GET("/selectTeam/:teamID", func(context *gin.Context) {
+			teamID := context.Param("teamID")
+			if teamID, err := strconv.ParseInt(teamID, 10, 64); err != nil {
+				context.JSON(
+					http.StatusNotFound,
+					gin.H{
+						"msg":  "error",
+						"team": nil,
+					},
+				)
+			} else {
+				ServiceSelectTeam(teamID, context)
+			}
+		})
+
+		v2.GET("/selectMembers/:teamID", func(context *gin.Context) {
+			teamID := context.Param("teamID")
+			if teamID, err := strconv.ParseInt(teamID, 10, 64); err != nil {
+				context.JSON(
+					http.StatusNotFound,
+					gin.H{
+						"msg":     "error",
+						"team":    nil,
+						"members": nil,
+					},
+				)
+			} else {
+				ServiceSelectMember(teamID, context)
+			}
+		})
+	}
 	return e
 }
 
