@@ -3,7 +3,9 @@ package user
 import (
 	"database/sql"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"log"
+	"strconv"
 	"wxProjectDev/utils"
 )
 
@@ -60,7 +62,7 @@ func createMember(teamID int64, userID string, userName string, admin bool) erro
 	return nil
 }
 
-func selectMember(teamID int64) ([]Member, error) {
+func selectMembers(teamID int64) ([]Member, error) {
 	rows, err := db.Query("SELECT * FROM member WHERE teamID = ?", teamID)
 	if err != nil {
 		log.Println("select Meber 出现错误")
@@ -77,4 +79,36 @@ func selectMember(teamID int64) ([]Member, error) {
 		members = append(members, member)
 	}
 	return members, nil
+}
+
+func selectOneMember(teamID int64, userID string) (Member, error) {
+	var member Member
+	row := db.QueryRow("SELECT * FROM member WHERE teamID = ? AND userID = ?", teamID, userID)
+	if err := row.Scan(&member.TeamID, &member.UserID, &member.UserName, &member.Admin); err != nil {
+		log.Println("select one member，出现错误！")
+		return member, fmt.Errorf("add: %v", err)
+	}
+	return member, nil
+}
+
+func getTeamCode(teamID int64) (string, error) {
+	//ctx := context.Background()
+	val, err := rdb.Get(ctx, strconv.FormatInt(teamID, 10)).Result()
+	if err == redis.Nil {
+		log.Printf("teamID: %d 还没有验证码\n", teamID)
+		return "", redis.Nil
+	} else if err != nil {
+		log.Printf("teamID: %d 尝试获取验证码失败\n", teamID)
+		return "", err
+	}
+	return val, nil
+}
+
+func setTeamCode(teamID int64, code string) error {
+	//ctx := context.Background()
+	_, err := rdb.Set(ctx, strconv.FormatInt(teamID, 10), code, 0).Result()
+	if err != nil {
+		return fmt.Errorf("设置team验证码出错: %v", err)
+	}
+	return nil
 }

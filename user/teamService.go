@@ -2,7 +2,10 @@ package user
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
+	"math/rand"
 	"net/http"
+	"strconv"
 )
 
 func ServiceCreateTeam(openid, teamName string, context *gin.Context) {
@@ -66,7 +69,7 @@ func ServiceSelectTeam(teamID int64, context *gin.Context) {
 
 func ServiceSelectMember(teamID int64, context *gin.Context) {
 	team, err1 := selectTeam(teamID)
-	members, err2 := selectMember(teamID)
+	members, err2 := selectMembers(teamID)
 	if err1 == nil && err2 == nil {
 		context.ShouldBindJSON(&team)
 		context.ShouldBindJSON(&members)
@@ -88,4 +91,71 @@ func ServiceSelectMember(teamID int64, context *gin.Context) {
 			},
 		)
 	}
+}
+
+// ServiceGetTeamCode TODO 获得指定team的验证码
+func ServiceGetTeamCode(teamIdStr string, userID string, context *gin.Context) {
+	// teamID是否合格
+	teamID, err := strconv.ParseInt(teamIdStr, 10, 64)
+	if err != nil {
+		context.Status(http.StatusBadRequest)
+		return
+	}
+	// 指定member是否存在
+	member, err := selectOneMember(teamID, userID)
+	if err != nil || !member.Admin {
+		context.Status(http.StatusBadRequest)
+		return
+	}
+
+	// 是否已经存在code，不存在则需要先生成
+	code, err := getTeamCode(teamID)
+	if err == redis.Nil {
+		code = strconv.Itoa(10000 + rand.Intn(9999))
+		if err = setTeamCode(teamID, code); err != nil {
+			context.Status(http.StatusServiceUnavailable)
+			return
+		}
+	} else if err != nil {
+		context.Status(http.StatusServiceUnavailable)
+		return
+	}
+	context.JSON(
+		http.StatusOK,
+		gin.H{
+			"msg":      "ok",
+			"teamCode": code,
+		},
+	)
+}
+
+// ServiceUpdateTeamCode TODO 更新指定team的验证码
+func ServiceUpdateTeamCode(teamIdStr string, userID string, context *gin.Context) {
+	// teamID是否合格
+	teamID, err := strconv.ParseInt(teamIdStr, 10, 64)
+	if err != nil {
+		context.Status(http.StatusBadRequest)
+		return
+	}
+
+	// 指定member是否存在
+	member, err := selectOneMember(teamID, userID)
+	if err != nil || !member.Admin {
+		context.Status(http.StatusBadRequest)
+		return
+	}
+
+	// 生成code
+	code := strconv.Itoa(10000 + rand.Intn(9999))
+	if err = setTeamCode(teamID, code); err != nil {
+		context.Status(http.StatusServiceUnavailable)
+		return
+	}
+	context.JSON(
+		http.StatusOK,
+		gin.H{
+			"msg":      "ok",
+			"teamCode": code,
+		},
+	)
 }

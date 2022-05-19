@@ -33,6 +33,7 @@ type RedisConf struct {
 var config *Config
 var db *sql.DB
 var rdb *redis.Client
+var ctx context.Context
 
 func init() {
 	yamlFile, err := ioutil.ReadFile("user/config/config.yaml")
@@ -75,7 +76,7 @@ func initRedis() {
 		Password: config.RedisConf.Password, // no password set
 		DB:       config.RedisConf.DB,       // use default DB
 	})
-	ctx := context.Background()
+	ctx = context.Background()
 	val, err := rdb.Get(ctx, "key").Result()
 	if err == redis.Nil {
 		fmt.Println("key2 does not exist")

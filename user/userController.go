@@ -100,6 +100,12 @@ func Controller() http.Handler {
 				ServiceSelectMember(teamID, context)
 			}
 		})
+
+		v2.GET("/selectTeamCode/:teamID", func(context *gin.Context) {
+			teamID := context.Param("teamID")
+			userID := context.Query("userID")
+			ServiceGetTeamCode(teamID, userID, context)
+		})
 	}
 	return e
 }
