@@ -106,6 +106,12 @@ func Controller() http.Handler {
 			userID := context.Query("userID")
 			ServiceGetTeamCode(teamID, userID, context)
 		})
+
+		v2.GET("/updateTeamCode/:teamID", func(context *gin.Context) {
+			teamID := context.Param("teamID")
+			userID := context.Query("userID")
+			ServiceUpdateTeamCode(teamID, userID, context)
+		})
 	}
 	return e
 }
