@@ -93,7 +93,7 @@ func ServiceSelectMember(teamID int64, context *gin.Context) {
 	}
 }
 
-// ServiceGetTeamCode TODO 获得指定team的验证码
+// ServiceGetTeamCode  获得指定team的验证码
 func ServiceGetTeamCode(teamIdStr string, userID string, context *gin.Context) {
 	// teamID是否合格
 	teamID, err := strconv.ParseInt(teamIdStr, 10, 64)
@@ -129,7 +129,7 @@ func ServiceGetTeamCode(teamIdStr string, userID string, context *gin.Context) {
 	)
 }
 
-// ServiceUpdateTeamCode TODO 更新指定team的验证码
+// ServiceUpdateTeamCode  更新指定team的验证码
 func ServiceUpdateTeamCode(teamIdStr string, userID string, context *gin.Context) {
 	// teamID是否合格
 	teamID, err := strconv.ParseInt(teamIdStr, 10, 64)
@@ -158,4 +158,52 @@ func ServiceUpdateTeamCode(teamIdStr string, userID string, context *gin.Context
 			"teamCode": code,
 		},
 	)
+}
+
+// ServiceJoinTeam 根据验证码加入指定的team
+func ServiceJoinTeam(userID, userName, teamIdStr, teamCode string, context *gin.Context) {
+	// teamID是否合格
+	teamID, err := strconv.ParseInt(teamIdStr, 10, 64)
+	if err != nil {
+		context.Status(http.StatusBadRequest)
+		return
+	}
+	// 是否已经存在code，不存在则需要先生成
+	code, err := getTeamCode(teamID)
+	if err == redis.Nil {
+		context.JSON(
+			http.StatusOK,
+			gin.H{
+				"msg": "wrong code",
+			},
+		)
+		return
+	} else if err != nil {
+		context.Status(http.StatusServiceUnavailable)
+		return
+	}
+
+	// 判断输出code是否等于实际code
+	if code != teamCode {
+		context.JSON(
+			http.StatusOK,
+			gin.H{
+				"msg": "wrong code",
+			},
+		)
+		return
+	}
+
+	// 验证通过则create Member
+	err = createMember(teamID, userID, userName, false)
+	if err != nil {
+		context.Status(http.StatusServiceUnavailable)
+	} else {
+		context.JSON(
+			http.StatusOK,
+			gin.H{
+				"msg": "ok",
+			},
+		)
+	}
 }

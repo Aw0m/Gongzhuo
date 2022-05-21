@@ -112,6 +112,14 @@ func Controller() http.Handler {
 			userID := context.Query("userID")
 			ServiceUpdateTeamCode(teamID, userID, context)
 		})
+
+		v2.POST("/joinTeam", func(context *gin.Context) {
+			userID := context.PostForm("userID")
+			userName := context.PostForm("userName")
+			teamIdStr := context.PostForm("teamIdStr")
+			teamCode := context.PostForm("teamCode")
+			ServiceJoinTeam(userID, userName, teamIdStr, teamCode, context)
+		})
 	}
 	return e
 }
