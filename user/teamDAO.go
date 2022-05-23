@@ -24,6 +24,7 @@ func createTeam(creatorID, teamName string) (int64, error) {
 	err = createMember(teamID, creatorID, creator.userName, true)
 	if err != nil {
 		trans.Rollback()
+		log.Println(err)
 		return -2, fmt.Errorf("add: %v", err)
 	}
 
@@ -65,7 +66,7 @@ func createMember(teamID int64, userID string, userName string, admin bool) erro
 func selectMembers(teamID int64) ([]Member, error) {
 	rows, err := db.Query("SELECT * FROM member WHERE teamID = ?", teamID)
 	if err != nil {
-		log.Println("select Meber 出现错误")
+		log.Println("select member 出现错误", err.Error())
 		return nil, fmt.Errorf("select: %v", err)
 	}
 	defer rows.Close()
