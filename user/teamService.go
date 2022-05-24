@@ -69,7 +69,7 @@ func ServiceSelectTeam(teamID int64, context *gin.Context) {
 
 func ServiceSelectMember(teamID int64, context *gin.Context) {
 	team, err1 := selectTeam(teamID)
-	members, err2 := selectMembers(teamID)
+	members, err2 := selectTeamMembers(teamID)
 	if err1 == nil && err2 == nil {
 		context.ShouldBindJSON(&team)
 		context.ShouldBindJSON(&members)
@@ -203,6 +203,31 @@ func ServiceJoinTeam(userID, userName, teamIdStr, teamCode string, context *gin.
 			http.StatusOK,
 			gin.H{
 				"msg": "ok",
+			},
+		)
+	}
+}
+
+func ServiceSelectAllTeams(userID string, context *gin.Context) {
+	if members, err := selectUserMembers(userID); err != nil {
+		context.JSON(
+			http.StatusOK,
+			gin.H{
+				"msg": err.Error(),
+			},
+		)
+	} else {
+		teams := make([]Team, 0, len(members))
+		for _, mem := range members {
+			teamTemp, _ := selectTeam(mem.TeamID)
+			teams = append(teams, teamTemp)
+		}
+		context.ShouldBindJSON(&teams)
+		context.JSON(
+			http.StatusOK,
+			gin.H{
+				"msg":   "ok",
+				"teams": teams,
 			},
 		)
 	}

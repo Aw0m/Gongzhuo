@@ -63,7 +63,7 @@ func createMember(teamID int64, userID string, userName string, admin bool) erro
 	return nil
 }
 
-func selectMembers(teamID int64) ([]Member, error) {
+func selectTeamMembers(teamID int64) ([]Member, error) {
 	rows, err := db.Query("SELECT * FROM member WHERE teamID = ?", teamID)
 	if err != nil {
 		log.Println("select member 出现错误", err.Error())
@@ -112,4 +112,23 @@ func setTeamCode(teamID int64, code string) error {
 		return fmt.Errorf("设置team验证码出错: %v", err)
 	}
 	return nil
+}
+
+func selectUserMembers(userID string) ([]Member, error) {
+	rows, err := db.Query("SELECT * FROM member WHERE userID = ?", userID)
+	if err != nil {
+		log.Println("select member 出现错误", err.Error())
+		return nil, fmt.Errorf("select: %v", err)
+	}
+	defer rows.Close()
+
+	var members []Member
+	for rows.Next() {
+		var member Member
+		if err := rows.Scan(&member.TeamID, &member.UserID, &member.UserName, &member.Admin); err != nil {
+			log.Fatal(err)
+		}
+		members = append(members, member)
+	}
+	return members, nil
 }

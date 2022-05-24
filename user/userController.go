@@ -121,6 +121,12 @@ func Controller() http.Handler {
 			teamCode := context.PostForm("teamCode")
 			ServiceJoinTeam(userID, userName, teamIdStr, teamCode, context)
 		})
+
+		// 获得指定用户的所有已加入的team信息
+		v2.GET("/selectAllTeams", func(context *gin.Context) {
+			userID := context.GetHeader("userID")
+			ServiceSelectAllTeams(userID, context)
+		})
 	}
 	return e
 }
