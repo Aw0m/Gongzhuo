@@ -11,7 +11,7 @@ import (
 
 func Controller() http.Handler {
 	e := gin.New()
-	e.Use(gin.Recovery())
+	e.Use(gin.Recovery(), gin.Logger())
 
 	v1 := e.Group("/user")
 	{

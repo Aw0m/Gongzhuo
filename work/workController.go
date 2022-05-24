@@ -7,7 +7,7 @@ import (
 
 func Controller() http.Handler {
 	e := gin.New()
-	e.Use(gin.Recovery())
+	e.Use(gin.Recovery(), gin.Logger())
 	e.GET("/", func(c *gin.Context) {
 		c.JSON(
 			http.StatusOK,
