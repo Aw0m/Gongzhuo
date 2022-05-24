@@ -6,6 +6,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"log"
 	"strconv"
+	"wxProjectDev/public"
 	"wxProjectDev/utils"
 )
 
@@ -13,7 +14,7 @@ func createTeam(creatorID, teamName string) (int64, error) {
 	utils.SetMachineId(0)
 	teamID := utils.GetSnowflakeId()
 
-	trans, _ := db.Begin()
+	trans, _ := public.DB.Begin()
 	_, err := trans.Exec("INSERT INTO team (teamID, teamName, creatorID) VALUE (?, ?, ?)", teamID, teamName, creatorID)
 	if err != nil {
 		log.Println("create team，出现错误！")
@@ -33,7 +34,7 @@ func createTeam(creatorID, teamName string) (int64, error) {
 }
 
 func updateTeam(teamID int64, teamName string) error {
-	_, err := db.Exec("UPDATE team SET teamName = ? WHERE teamID = ?", teamName, teamID)
+	_, err := public.DB.Exec("UPDATE team SET teamName = ? WHERE teamID = ?", teamName, teamID)
 	if err != nil {
 		log.Println("update team，出现错误！")
 		return fmt.Errorf("add: %v", err)
@@ -43,7 +44,7 @@ func updateTeam(teamID int64, teamName string) error {
 
 func selectTeam(teamID int64) (Team, error) {
 	var team Team
-	row := db.QueryRow("SELECT * FROM team WHERE teamID = ?", teamID)
+	row := public.DB.QueryRow("SELECT * FROM team WHERE teamID = ?", teamID)
 	if err := row.Scan(&team.TeamID, &team.TeamName, &team.CreatorID); err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("no such teamID: %d\n", teamID)
@@ -55,7 +56,7 @@ func selectTeam(teamID int64) (Team, error) {
 }
 
 func createMember(teamID int64, userID string, userName string, admin bool) error {
-	_, err := db.Exec("INSERT INTO member (teamID, userID, userName, admin) VALUE (?, ?, ?, ?)", teamID, userID, userName, admin)
+	_, err := public.DB.Exec("INSERT INTO member (teamID, userID, userName, admin) VALUE (?, ?, ?, ?)", teamID, userID, userName, admin)
 	if err != nil {
 		log.Println("create member，出现错误！")
 		return fmt.Errorf("add: %v", err)
@@ -64,7 +65,7 @@ func createMember(teamID int64, userID string, userName string, admin bool) erro
 }
 
 func selectTeamMembers(teamID int64) ([]Member, error) {
-	rows, err := db.Query("SELECT * FROM member WHERE teamID = ?", teamID)
+	rows, err := public.DB.Query("SELECT * FROM member WHERE teamID = ?", teamID)
 	if err != nil {
 		log.Println("select member 出现错误", err.Error())
 		return nil, fmt.Errorf("select: %v", err)
@@ -84,7 +85,7 @@ func selectTeamMembers(teamID int64) ([]Member, error) {
 
 func selectOneMember(teamID int64, userID string) (Member, error) {
 	var member Member
-	row := db.QueryRow("SELECT * FROM member WHERE teamID = ? AND userID = ?", teamID, userID)
+	row := public.DB.QueryRow("SELECT * FROM member WHERE teamID = ? AND userID = ?", teamID, userID)
 	if err := row.Scan(&member.TeamID, &member.UserID, &member.UserName, &member.Admin); err != nil {
 		log.Println("select one member，出现错误！")
 		return member, fmt.Errorf("add: %v", err)
@@ -94,7 +95,7 @@ func selectOneMember(teamID int64, userID string) (Member, error) {
 
 func getTeamCode(teamID int64) (string, error) {
 	//ctx := context.Background()
-	val, err := rdb.Get(ctx, strconv.FormatInt(teamID, 10)).Result()
+	val, err := public.RDS.Get(public.CTX, strconv.FormatInt(teamID, 10)).Result()
 	if err == redis.Nil {
 		log.Printf("teamID: %d 还没有验证码\n", teamID)
 		return "", redis.Nil
@@ -107,7 +108,7 @@ func getTeamCode(teamID int64) (string, error) {
 
 func setTeamCode(teamID int64, code string) error {
 	//ctx := context.Background()
-	_, err := rdb.Set(ctx, strconv.FormatInt(teamID, 10), code, 0).Result()
+	_, err := public.RDS.Set(public.CTX, strconv.FormatInt(teamID, 10), code, 0).Result()
 	if err != nil {
 		return fmt.Errorf("设置team验证码出错: %v", err)
 	}
@@ -115,7 +116,7 @@ func setTeamCode(teamID int64, code string) error {
 }
 
 func selectUserMembers(userID string) ([]Member, error) {
-	rows, err := db.Query("SELECT * FROM member WHERE userID = ?", userID)
+	rows, err := public.DB.Query("SELECT * FROM member WHERE userID = ?", userID)
 	if err != nil {
 		log.Println("select member 出现错误", err.Error())
 		return nil, fmt.Errorf("select: %v", err)

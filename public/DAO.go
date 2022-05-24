@@ -1,4 +1,4 @@
-package user
+package public
 
 import (
 	"context"
@@ -31,12 +31,12 @@ type RedisConf struct {
 }
 
 var config *Config
-var db *sql.DB
-var rdb *redis.Client
-var ctx context.Context
+var DB *sql.DB
+var RDS *redis.Client
+var CTX context.Context
 
 func init() {
-	yamlFile, err := ioutil.ReadFile("user/config/config.yaml")
+	yamlFile, err := ioutil.ReadFile("public/config/config.yaml")
 	if err != nil {
 		fmt.Println(err.Error())
 		panic(err)
@@ -59,11 +59,11 @@ func initMySQL() {
 		DBName: config.MySQLConf.DBName,
 	}
 	var err error
-	db, err = sql.Open("mysql", cfg.FormatDSN())
+	DB, err = sql.Open("mysql", cfg.FormatDSN())
 	if err != nil {
 		log.Fatal(nil)
 	}
-	pingErr := db.Ping()
+	pingErr := DB.Ping()
 	if pingErr != nil {
 		log.Fatal(pingErr)
 	}
@@ -71,13 +71,13 @@ func initMySQL() {
 }
 
 func initRedis() {
-	rdb = redis.NewClient(&redis.Options{
+	RDS = redis.NewClient(&redis.Options{
 		Addr:     config.RedisConf.Addr,
 		Password: config.RedisConf.Password, // no password set
 		DB:       config.RedisConf.DB,       // use default DB
 	})
-	ctx = context.Background()
-	val, err := rdb.Get(ctx, "key").Result()
+	CTX = context.Background()
+	val, err := RDS.Get(CTX, "key").Result()
 	if err == redis.Nil {
 		fmt.Println("key2 does not exist")
 	} else if err != nil {

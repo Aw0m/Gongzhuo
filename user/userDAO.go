@@ -4,10 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"wxProjectDev/public"
 )
 
 func createUser(userID string, userName string) error {
-	_, err := db.Exec("INSERT INTO user (userID, userName) VALUE (?, ?)", userID, userName)
+	_, err := public.DB.Exec("INSERT INTO user (userID, userName) VALUE (?, ?)", userID, userName)
 	if err != nil {
 		log.Println("create user时，出现错误！")
 		return fmt.Errorf("add: %v", err)
@@ -17,7 +18,7 @@ func createUser(userID string, userName string) error {
 
 func selectUser(userID string) (User, error) {
 	var res User
-	row := db.QueryRow("SELECT * FROM user WHERE userID = ?", userID)
+	row := public.DB.QueryRow("SELECT * FROM user WHERE userID = ?", userID)
 	if err := row.Scan(&res.userID, &res.userName); err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("no such userID: %s\n", userID)
@@ -29,7 +30,7 @@ func selectUser(userID string) (User, error) {
 }
 
 func updateUser(userID string, userName string) error {
-	_, err := db.Exec("UPDATE user SET userName = ? WHERE userID = ?", userName, userID)
+	_, err := public.DB.Exec("UPDATE user SET userName = ? WHERE userID = ?", userName, userID)
 	if err != nil {
 		log.Println("update user时，出现错误！")
 		return fmt.Errorf("add: %v", err)
