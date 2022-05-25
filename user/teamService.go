@@ -102,7 +102,7 @@ func ServiceGetTeamCode(teamIdStr string, userID string, context *gin.Context) {
 		return
 	}
 	// 指定member是否存在
-	member, err := selectOneMember(teamID, userID)
+	member, err := SelectOneMember(teamID, userID)
 	if err != nil || !member.Admin {
 		context.Status(http.StatusBadRequest)
 		return
@@ -139,7 +139,7 @@ func ServiceUpdateTeamCode(teamIdStr string, userID string, context *gin.Context
 	}
 
 	// 指定member是否存在
-	member, err := selectOneMember(teamID, userID)
+	member, err := SelectOneMember(teamID, userID)
 	if err != nil || !member.Admin {
 		context.Status(http.StatusBadRequest)
 		return

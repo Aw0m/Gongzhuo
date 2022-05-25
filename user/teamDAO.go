@@ -83,7 +83,7 @@ func selectTeamMembers(teamID int64) ([]Member, error) {
 	return members, nil
 }
 
-func selectOneMember(teamID int64, userID string) (Member, error) {
+func SelectOneMember(teamID int64, userID string) (Member, error) {
 	var member Member
 	row := public.DB.QueryRow("SELECT * FROM member WHERE teamID = ? AND userID = ?", teamID, userID)
 	if err := row.Scan(&member.TeamID, &member.UserID, &member.UserName, &member.Admin); err != nil {

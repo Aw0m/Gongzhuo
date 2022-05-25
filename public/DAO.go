@@ -9,6 +9,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
+	"time"
 )
 
 type Config struct {
@@ -57,6 +58,7 @@ func initMySQL() {
 		Net:    config.MySQLConf.Net,
 		Addr:   config.MySQLConf.Addr,
 		DBName: config.MySQLConf.DBName,
+		Loc:    time.Time.Location(time.Time{}.Local()),
 	}
 	var err error
 	DB, err = sql.Open("mysql", cfg.FormatDSN())
