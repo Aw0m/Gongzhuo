@@ -32,6 +32,12 @@ func Controller() http.Handler {
 			repIdStr := context.Query("repID")
 			ServiceGetReport(repIdStr, context)
 		})
+
+		v1.GET("/getReportInfos", func(context *gin.Context) {
+			userID := context.GetHeader("userID")
+			teamIdStr := context.Query("teamID")
+			ServiceGetTeamRep(teamIdStr, userID, context)
+		})
 	}
 
 	return e

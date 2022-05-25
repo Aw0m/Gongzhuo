@@ -41,3 +41,36 @@ func selectReport(repID int64) (Report, error) {
 	report.RepDate, _ = time.Parse("2006-01-02 15:04:05", repDateStr)
 	return report, nil
 }
+func selectAllRep(teamID int64) ([]Report, error) {
+	rows, err := public.DB.Query("SELECT reportID, userID, repDate FROM report WHERE teamID = ?", teamID)
+	if err != nil {
+		log.Println("查询指定teamID的report出现错误：", err.Error())
+		return nil, err
+	}
+	defer rows.Close()
+
+	var reports []Report
+	var timeStrTemp string
+	for rows.Next() {
+		var rep Report
+		if err := rows.Scan(&rep.ReportID, &rep.UserID, &timeStrTemp); err != nil {
+			log.Fatal(err)
+		}
+		rep.RepDate, _ = time.Parse("2006-01-02 15:04:05", timeStrTemp)
+		reports = append(reports, rep)
+	}
+	return reports, nil
+}
+
+func getUserName(userID string) (string, error) {
+	var userName string
+	row := public.DB.QueryRow("SELECT userName FROM user WHERE userID = ?", userID)
+	if err := row.Scan(&userName); err != nil {
+		if err == sql.ErrNoRows {
+			log.Printf("no such userID: %s\n", userID)
+			return userName, err
+		}
+		return userName, fmt.Errorf("selectUser %s: %v", userID, err)
+	}
+	return userName, nil
+}

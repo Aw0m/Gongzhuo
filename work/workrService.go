@@ -92,3 +92,59 @@ func ServiceGetReport(repIDStr string, context *gin.Context) {
 		},
 	)
 }
+
+func ServiceGetTeamRep(teamIdStr, userID string, context *gin.Context) {
+	teamID, err := strconv.ParseInt(teamIdStr, 10, 64)
+	if err != nil {
+		context.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"msg":   "teamID不为 int64",
+				"repID": "",
+			},
+		)
+		return
+	}
+
+	_, err = user.SelectOneMember(teamID, userID)
+	if err != nil {
+		context.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"msg":   "userID 和 teamID无法对应",
+				"repID": "",
+			},
+		)
+		return
+	}
+
+	reports, err := selectAllRep(teamID)
+	if err != nil {
+		context.JSON(
+			http.StatusServiceUnavailable,
+			gin.H{
+				"msg":     err.Error(),
+				"reports": nil,
+			},
+		)
+		return
+	}
+	repInfos := make([]ReportInfo, 0, len(reports))
+	for _, rep := range reports {
+		var repInfoTemp = ReportInfo{
+			rep.ReportID,
+			rep.UserID,
+			"",
+			rep.RepDate,
+		}
+		repInfoTemp.UserName, _ = getUserName(rep.UserID)
+		repInfos = append(repInfos, repInfoTemp)
+	}
+	context.ShouldBindJSON(repInfos)
+	context.JSON(
+		http.StatusOK,
+		gin.H{
+			"repInfos": repInfos,
+		},
+	)
+}

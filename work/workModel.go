@@ -11,3 +11,10 @@ type Report struct {
 	Problem  string    `json:"problem"`
 	RepDate  time.Time `json:"repDate"`
 }
+
+type ReportInfo struct {
+	ReportID int64     `json:"reportID"`
+	UserID   string    `json:"userID"`
+	UserName string    `json:"userName"`
+	RepDate  time.Time `json:"repDate"`
+}
