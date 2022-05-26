@@ -3,6 +3,7 @@ package work
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 func Controller() http.Handler {
@@ -17,6 +18,17 @@ func Controller() http.Handler {
 			},
 		)
 	})
+
+	e.GET("/test", func(context *gin.Context) {
+		time.Sleep(time.Millisecond * 5)
+		context.JSON(
+			http.StatusOK,
+			gin.H{
+				"msg": "ok",
+			},
+		)
+	})
+
 	v1 := e.Group("/work")
 	{
 		v1.POST("/createReport", func(context *gin.Context) {
@@ -38,6 +50,7 @@ func Controller() http.Handler {
 			teamIdStr := context.Query("teamID")
 			ServiceGetTeamRep(teamIdStr, userID, context)
 		})
+
 	}
 
 	return e
