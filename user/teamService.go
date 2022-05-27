@@ -14,7 +14,7 @@ func ServiceCreateTeam(openid, teamName string, context *gin.Context) {
 			http.StatusOK,
 			gin.H{
 				"msg":    "ok",
-				"teamID": teamID,
+				"teamID": strconv.FormatInt(teamID, 10),
 			},
 		)
 	} else {
@@ -217,10 +217,15 @@ func ServiceSelectAllTeams(userID string, context *gin.Context) {
 			},
 		)
 	} else {
-		teams := make([]Team, 0, len(members))
+		teams := make([]TeamStr, 0, len(members))
 		for _, mem := range members {
 			teamTemp, _ := selectTeam(mem.TeamID)
-			teams = append(teams, teamTemp)
+			teamStrTemp := TeamStr{
+				TeamIdStr: strconv.FormatInt(teamTemp.TeamID, 10),
+				TeamName:  teamTemp.TeamName,
+				CreatorID: teamTemp.CreatorID,
+			}
+			teams = append(teams, teamStrTemp)
 		}
 		context.ShouldBindJSON(&teams)
 		context.JSON(

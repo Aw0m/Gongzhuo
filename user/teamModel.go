@@ -6,6 +6,12 @@ type Team struct {
 	CreatorID string `json:"creatorID"`
 }
 
+type TeamStr struct {
+	TeamIdStr string `json:"teamID"`
+	TeamName  string `json:"teamName"`
+	CreatorID string `json:"creatorID"`
+}
+
 type Member struct {
 	TeamID   int64  `json:"teamID"`
 	UserID   string `json:"userID"`
