@@ -48,12 +48,16 @@ func ServiceUpdateTeam(teamID int64, teamName string, context *gin.Context) {
 
 func ServiceSelectTeam(teamID int64, context *gin.Context) {
 	if team, err := selectTeam(teamID); err == nil {
-		context.ShouldBindJSON(&team)
+		teamStr := TeamStr{
+			TeamIdStr: strconv.FormatInt(team.TeamID, 10),
+			TeamName:  team.TeamName,
+			CreatorID: team.CreatorID,
+		}
 		context.JSON(
 			http.StatusOK,
 			gin.H{
 				"msg":  "ok",
-				"team": team,
+				"team": teamStr,
 			},
 		)
 	} else {
@@ -69,25 +73,32 @@ func ServiceSelectTeam(teamID int64, context *gin.Context) {
 
 func ServiceSelectMember(teamID int64, context *gin.Context) {
 	team, err1 := selectTeam(teamID)
-	members, err2 := selectTeamMembers(teamID)
+	membersStr, err2 := selectTeamMembers(teamID)
 	if err1 == nil && err2 == nil {
-		context.ShouldBindJSON(&team)
-		context.ShouldBindJSON(&members)
+		teamStr := TeamStr{
+			TeamIdStr: strconv.FormatInt(team.TeamID, 10),
+			TeamName:  team.TeamName,
+			CreatorID: team.CreatorID,
+		}
+		for i := range membersStr {
+			userTemp, _ := selectUser(membersStr[i].UserID)
+			membersStr[i].UserName = userTemp.userName
+		}
 		context.JSON(
 			http.StatusOK,
 			gin.H{
 				"msg":     "ok",
-				"team":    team,
-				"members": members,
+				"team":    teamStr,
+				"members": membersStr,
 			},
 		)
 	} else {
 		context.JSON(
-			http.StatusServiceUnavailable,
+			http.StatusBadRequest,
 			gin.H{
 				"msg":     "error",
 				"team":    team,
-				"members": members,
+				"members": membersStr,
 			},
 		)
 	}
@@ -227,7 +238,7 @@ func ServiceSelectAllTeams(userID string, context *gin.Context) {
 			}
 			teams = append(teams, teamStrTemp)
 		}
-		context.ShouldBindJSON(&teams)
+
 		context.JSON(
 			http.StatusOK,
 			gin.H{
