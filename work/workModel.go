@@ -3,9 +3,9 @@ package work
 import "time"
 
 type Report struct {
-	ReportID int64     `json:"reportID"`
+	ReportID string    `json:"reportID"`
 	UserID   string    `json:"userID"`
-	TeamID   int64     `json:"teamID"`
+	TeamID   string    `json:"teamID"`
 	Done     string    `json:"done"`
 	ToDO     string    `json:"toDO"`
 	Problem  string    `json:"problem"`
@@ -13,7 +13,7 @@ type Report struct {
 }
 
 type ReportInfo struct {
-	ReportID int64     `json:"reportID"`
+	ReportID string    `json:"reportID"`
 	UserID   string    `json:"userID"`
 	UserName string    `json:"userName"`
 	RepDate  time.Time `json:"repDate"`

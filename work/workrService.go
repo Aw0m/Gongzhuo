@@ -40,7 +40,7 @@ func ServiceCreateReport(userID, teamIdStr, done, toDo, problem string, context 
 			http.StatusBadRequest,
 			gin.H{
 				"msg":   "error",
-				"repID": repID,
+				"repID": strconv.FormatInt(repID, 10),
 			},
 		)
 	} else {
@@ -48,7 +48,7 @@ func ServiceCreateReport(userID, teamIdStr, done, toDo, problem string, context 
 			http.StatusOK,
 			gin.H{
 				"msg":   "ok",
-				"repID": repID,
+				"repID": strconv.FormatInt(repID, 10),
 			},
 		)
 	}
