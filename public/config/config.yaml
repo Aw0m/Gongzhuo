@@ -1,11 +1,11 @@
 MySQL:
   User: "root"
-  Passwd: "pswd"
+  Passwd: "lx2001812xx"
   Net: "tcp"
   Addr: "127.0.0.1:3306"
-  DBName: "db_name"
+  DBName: "wxproject_dev"
 
 Redis:
-  Addr: "host:port"
-  Password: "pswd"
+  Addr: "175.24.163.131:6380"
+  Password: "123456"
   DB:       0

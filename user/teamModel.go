@@ -18,3 +18,10 @@ type Member struct {
 	UserName string `json:"userName"`
 	Admin    bool   `json:"admin"`
 }
+
+type MemberStr struct {
+	TeamID   string `json:"teamID"`
+	UserID   string `json:"userID"`
+	UserName string `json:"userName"`
+	Admin    bool   `json:"admin"`
+}
