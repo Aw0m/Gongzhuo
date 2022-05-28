@@ -64,18 +64,19 @@ func createMember(teamID int64, userID string, userName string, admin bool) erro
 	return nil
 }
 
-func selectTeamMembers(teamID int64) ([]Member, error) {
-	rows, err := public.DB.Query("SELECT * FROM member WHERE teamID = ?", teamID)
+//TODO 需要修改一下表结构，删除 userName。 使得selectTeamMembers依然返回正常的 []Member
+func selectTeamMembers(teamID int64) ([]MemberStr, error) {
+	rows, err := public.DB.Query("SELECT teamID, userID, admin FROM member WHERE teamID = ?", teamID)
 	if err != nil {
 		log.Println("select member 出现错误", err.Error())
 		return nil, fmt.Errorf("select: %v", err)
 	}
 	defer rows.Close()
 
-	var members []Member
+	var members []MemberStr
 	for rows.Next() {
-		var member Member
-		if err := rows.Scan(&member.TeamID, &member.UserID, &member.UserName, &member.Admin); err != nil {
+		var member MemberStr
+		if err := rows.Scan(&member.TeamID, &member.UserID, &member.Admin); err != nil {
 			log.Fatal(err)
 		}
 		members = append(members, member)
