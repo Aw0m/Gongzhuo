@@ -37,7 +37,7 @@ var RDS *redis.Client
 var CTX context.Context
 
 func init() {
-	yamlFile, err := ioutil.ReadFile("public/config/config.yaml")
+	yamlFile, err := ioutil.ReadFile("public/config/database.yaml")
 	if err != nil {
 		fmt.Println(err.Error())
 		panic(err)
