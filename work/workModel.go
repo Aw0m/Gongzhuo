@@ -7,7 +7,7 @@ type Report struct {
 	UserID   string    `json:"userID"`
 	TeamID   string    `json:"teamID"`
 	Done     string    `json:"done"`
-	ToDO     string    `json:"toDO"`
+	ToDO     string    `json:"todo"`
 	Problem  string    `json:"problem"`
 	RepDate  time.Time `json:"repDate"`
 }
