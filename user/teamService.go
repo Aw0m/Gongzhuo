@@ -248,3 +248,33 @@ func ServiceSelectAllTeams(userID string, context *gin.Context) {
 		)
 	}
 }
+
+func ServiceAddAdmin(userID, memberID, teamIdStr string, context *gin.Context) {
+	var httpCode int
+	var msg string
+	if teamID, err := strconv.ParseInt(teamIdStr, 10, 64); err != nil {
+		httpCode = http.StatusBadRequest
+		msg = "teamID 格式错误！"
+	} else if team, err := selectTeam(teamID); err != nil {
+		httpCode = http.StatusBadRequest
+		msg = "不存在该teamID"
+	} else if team.CreatorID != userID {
+		httpCode = http.StatusBadRequest
+		msg = "操作者不是Creator"
+	} else if _, err := SelectOneMember(teamID, memberID); err != nil {
+		httpCode = http.StatusBadRequest
+		msg = "该member不是该team的成员"
+	} else if err := setAdmin(memberID, teamID); err != nil {
+		httpCode = http.StatusServiceUnavailable
+		msg = "无法设置该成员为admin"
+	} else {
+		httpCode = http.StatusOK
+		msg = "ok"
+	}
+	context.JSON(
+		httpCode,
+		gin.H{
+			"msg": msg,
+		},
+	)
+}

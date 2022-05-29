@@ -127,6 +127,14 @@ func Controller() http.Handler {
 			userID := context.GetHeader("userID")
 			ServiceSelectAllTeams(userID, context)
 		})
+
+		// 增加新的admin
+		v2.POST("/addAdmin", func(context *gin.Context) {
+			userID := context.GetHeader("userID")
+			memberID := context.PostForm("memberID")
+			teamID := context.PostForm("teamID")
+			ServiceAddAdmin(userID, memberID, teamID, context)
+		})
 	}
 	return e
 }

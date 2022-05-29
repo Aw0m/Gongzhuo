@@ -134,3 +134,8 @@ func selectUserMembers(userID string) ([]Member, error) {
 	}
 	return members, nil
 }
+
+func setAdmin(userID string, teamID int64) error {
+	_, err := public.DB.Exec("UPDATE member SET admin = true WHERE userID = ? AND teamID = ?", userID, teamID)
+	return err
+}
