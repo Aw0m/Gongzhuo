@@ -1,4 +1,4 @@
-package user
+package services
 
 import (
 	"database/sql"
@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"wxProjectDev/public/utils"
+	"wxProjectDev/user/daos"
 )
 
 // ServiceLogin 用户登录服务，生成Token。并且在数据库中检索该用户是否已经注册，如果没有则还会在数据库中创建该用户
@@ -24,7 +26,7 @@ func ServiceLogin(code, userName string, context *gin.Context) {
 		resError = "code is not good"
 	} else {
 		// 解析微信服务端的response，获得openid并查询是否已经存入数据库，如果没有则在数据库中生成一个user
-		body, _ := parseResponse(res)
+		body, _ := utils.ParseResponse(res)
 		httpCode = http.StatusOK
 		resError = body["errcode"]
 		openidAny := body["openid"]
@@ -32,10 +34,10 @@ func ServiceLogin(code, userName string, context *gin.Context) {
 		var ok bool
 		if openid, ok = openidAny.(string); ok {
 			// 生成token。如果数据库里没有该用户，则在该数据库生成该user
-			token = createToken(openid, openid)
-			if _, err := selectUser(openid); err == sql.ErrNoRows {
+			token = utils.CreateToken(openid, openid)
+			if _, err := daos.SelectUser(openid); err == sql.ErrNoRows {
 				log.Printf("生成用户：%s\n", userName)
-				err = createUser(openid, userName)
+				err = daos.CreateUser(openid, userName)
 			}
 			if err != nil {
 				log.Println(err)
@@ -58,7 +60,7 @@ func ServiceLogin(code, userName string, context *gin.Context) {
 
 // ServiceUpdateUserName 更新用户的昵称
 func ServiceUpdateUserName(openid, userName string, context *gin.Context) {
-	if err := updateUser(openid, userName); err == nil {
+	if err := daos.UpdateUser(openid, userName); err == nil {
 		context.JSON(
 			http.StatusOK,
 			gin.H{
@@ -77,12 +79,12 @@ func ServiceUpdateUserName(openid, userName string, context *gin.Context) {
 
 // ServiceSelectUserName 获得用户的昵称
 func ServiceSelectUserName(openid string, context *gin.Context) {
-	if user, err := selectUser(openid); err == nil {
+	if user, err := daos.SelectUser(openid); err == nil {
 		context.JSON(
 			http.StatusOK,
 			gin.H{
 				"msg":      "ok",
-				"userName": user.userName,
+				"userName": user.UserName,
 			},
 		)
 	} else {

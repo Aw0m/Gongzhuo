@@ -1,4 +1,4 @@
-package user
+package services
 
 import (
 	"github.com/gin-gonic/gin"
@@ -6,10 +6,12 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"wxProjectDev/user/daos"
+	"wxProjectDev/user/models"
 )
 
 func ServiceCreateTeam(openid, teamName string, context *gin.Context) {
-	if teamID, err := createTeam(openid, teamName); err == nil {
+	if teamID, err := daos.CreateTeam(openid, teamName); err == nil {
 		context.JSON(
 			http.StatusOK,
 			gin.H{
@@ -29,7 +31,7 @@ func ServiceCreateTeam(openid, teamName string, context *gin.Context) {
 }
 
 func ServiceUpdateTeam(teamID int64, teamName string, context *gin.Context) {
-	if err := updateTeam(teamID, teamName); err == nil {
+	if err := daos.UpdateTeam(teamID, teamName); err == nil {
 		context.JSON(
 			http.StatusOK,
 			gin.H{
@@ -47,8 +49,8 @@ func ServiceUpdateTeam(teamID int64, teamName string, context *gin.Context) {
 }
 
 func ServiceSelectTeam(teamID int64, context *gin.Context) {
-	if team, err := selectTeam(teamID); err == nil {
-		teamStr := TeamStr{
+	if team, err := daos.SelectTeam(teamID); err == nil {
+		teamStr := models.TeamStr{
 			TeamIdStr: strconv.FormatInt(team.TeamID, 10),
 			TeamName:  team.TeamName,
 			CreatorID: team.CreatorID,
@@ -72,17 +74,17 @@ func ServiceSelectTeam(teamID int64, context *gin.Context) {
 }
 
 func ServiceSelectMember(teamID int64, context *gin.Context) {
-	team, err1 := selectTeam(teamID)
-	membersStr, err2 := selectTeamMembers(teamID)
+	team, err1 := daos.SelectTeam(teamID)
+	membersStr, err2 := daos.SelectTeamMembers(teamID)
 	if err1 == nil && err2 == nil {
-		teamStr := TeamStr{
+		teamStr := models.TeamStr{
 			TeamIdStr: strconv.FormatInt(team.TeamID, 10),
 			TeamName:  team.TeamName,
 			CreatorID: team.CreatorID,
 		}
 		for i := range membersStr {
-			userTemp, _ := selectUser(membersStr[i].UserID)
-			membersStr[i].UserName = userTemp.userName
+			userTemp, _ := daos.SelectUser(membersStr[i].UserID)
+			membersStr[i].UserName = userTemp.UserName
 		}
 		context.JSON(
 			http.StatusOK,
@@ -113,17 +115,17 @@ func ServiceGetTeamCode(teamIdStr string, userID string, context *gin.Context) {
 		return
 	}
 	// 指定member是否存在
-	member, err := SelectOneMember(teamID, userID)
+	member, err := daos.SelectOneMember(teamID, userID)
 	if err != nil || !member.Admin {
 		context.Status(http.StatusBadRequest)
 		return
 	}
 
 	// 是否已经存在code，不存在则需要先生成
-	code, err := getTeamCode(teamID)
+	code, err := daos.GetTeamCode(teamID)
 	if err == redis.Nil {
 		code = strconv.Itoa(10000 + rand.Intn(9999))
-		if err = setTeamCode(teamID, code); err != nil {
+		if err = daos.SetTeamCode(teamID, code); err != nil {
 			context.Status(http.StatusServiceUnavailable)
 			return
 		}
@@ -150,7 +152,7 @@ func ServiceUpdateTeamCode(teamIdStr string, userID string, context *gin.Context
 	}
 
 	// 指定member是否存在
-	member, err := SelectOneMember(teamID, userID)
+	member, err := daos.SelectOneMember(teamID, userID)
 	if err != nil || !member.Admin {
 		context.Status(http.StatusBadRequest)
 		return
@@ -158,7 +160,7 @@ func ServiceUpdateTeamCode(teamIdStr string, userID string, context *gin.Context
 
 	// 生成code
 	code := strconv.Itoa(10000 + rand.Intn(9999))
-	if err = setTeamCode(teamID, code); err != nil {
+	if err = daos.SetTeamCode(teamID, code); err != nil {
 		context.Status(http.StatusServiceUnavailable)
 		return
 	}
@@ -180,7 +182,7 @@ func ServiceJoinTeam(userID, userName, teamIdStr, teamCode string, context *gin.
 		return
 	}
 	// 是否已经存在code，不存在则需要先生成
-	code, err := getTeamCode(teamID)
+	code, err := daos.GetTeamCode(teamID)
 	if err == redis.Nil {
 		context.JSON(
 			http.StatusOK,
@@ -206,7 +208,7 @@ func ServiceJoinTeam(userID, userName, teamIdStr, teamCode string, context *gin.
 	}
 
 	// 验证通过则create Member
-	err = createMember(teamID, userID, userName, false)
+	err = daos.CreateMember(teamID, userID, userName, false)
 	if err != nil {
 		context.Status(http.StatusServiceUnavailable)
 	} else {
@@ -220,7 +222,7 @@ func ServiceJoinTeam(userID, userName, teamIdStr, teamCode string, context *gin.
 }
 
 func ServiceSelectAllTeams(userID string, context *gin.Context) {
-	if members, err := selectUserMembers(userID); err != nil {
+	if members, err := daos.SelectUserMembers(userID); err != nil {
 		context.JSON(
 			http.StatusOK,
 			gin.H{
@@ -228,10 +230,10 @@ func ServiceSelectAllTeams(userID string, context *gin.Context) {
 			},
 		)
 	} else {
-		teams := make([]TeamStr, 0, len(members))
+		teams := make([]models.TeamStr, 0, len(members))
 		for _, mem := range members {
-			teamTemp, _ := selectTeam(mem.TeamID)
-			teamStrTemp := TeamStr{
+			teamTemp, _ := daos.SelectTeam(mem.TeamID)
+			teamStrTemp := models.TeamStr{
 				TeamIdStr: strconv.FormatInt(teamTemp.TeamID, 10),
 				TeamName:  teamTemp.TeamName,
 				CreatorID: teamTemp.CreatorID,
@@ -255,16 +257,16 @@ func ServiceAddAdmin(userID, memberID, teamIdStr string, context *gin.Context) {
 	if teamID, err := strconv.ParseInt(teamIdStr, 10, 64); err != nil {
 		httpCode = http.StatusBadRequest
 		msg = "teamID 格式错误！"
-	} else if team, err := selectTeam(teamID); err != nil {
+	} else if team, err := daos.SelectTeam(teamID); err != nil {
 		httpCode = http.StatusBadRequest
 		msg = "不存在该teamID"
 	} else if team.CreatorID != userID {
 		httpCode = http.StatusBadRequest
 		msg = "操作者不是Creator"
-	} else if _, err := SelectOneMember(teamID, memberID); err != nil {
+	} else if _, err := daos.SelectOneMember(teamID, memberID); err != nil {
 		httpCode = http.StatusBadRequest
 		msg = "该member不是该team的成员"
-	} else if err := setAdmin(memberID, teamID); err != nil {
+	} else if err := daos.SetAdmin(memberID, teamID); err != nil {
 		httpCode = http.StatusServiceUnavailable
 		msg = "无法设置该成员为admin"
 	} else {

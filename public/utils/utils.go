@@ -1,7 +1,10 @@
-package user
+package utils
 
 import (
+	"encoding/json"
 	"github.com/golang-jwt/jwt"
+	"io/ioutil"
+	"net/http"
 	"time"
 )
 
@@ -15,7 +18,7 @@ var mySigningKey = []byte("dev123")
 
 const duration = 24 * 30
 
-func createToken(userId string, userName string) string {
+func CreateToken(userId string, userName string) string {
 	myToken := jwt.NewWithClaims(jwt.SigningMethodHS256, MyCustomClaims{
 		userId,
 		userName,
@@ -27,4 +30,14 @@ func createToken(userId string, userName string) string {
 	})
 	ss, _ := myToken.SignedString(mySigningKey)
 	return ss
+}
+
+func ParseResponse(response *http.Response) (map[string]interface{}, error) {
+	var result map[string]interface{}
+	body, err := ioutil.ReadAll(response.Body)
+	if err == nil {
+		err = json.Unmarshal(body, &result)
+	}
+
+	return result, err
 }

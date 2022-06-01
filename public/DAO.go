@@ -53,12 +53,13 @@ func init() {
 
 func initMySQL() {
 	cfg := mysql.Config{
-		User:   config.MySQLConf.User,
-		Passwd: config.MySQLConf.Passwd,
-		Net:    config.MySQLConf.Net,
-		Addr:   config.MySQLConf.Addr,
-		DBName: config.MySQLConf.DBName,
-		Loc:    time.Time.Location(time.Time{}.Local()),
+		User:                 config.MySQLConf.User,
+		Passwd:               config.MySQLConf.Passwd,
+		Net:                  config.MySQLConf.Net,
+		Addr:                 config.MySQLConf.Addr,
+		DBName:               config.MySQLConf.DBName,
+		Loc:                  time.Time.Location(time.Time{}.Local()),
+		AllowNativePasswords: true,
 	}
 	var err error
 	DB, err = sql.Open("mysql", cfg.FormatDSN())

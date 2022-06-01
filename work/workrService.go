@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-	"wxProjectDev/user"
+	"wxProjectDev/user/daos"
 )
 
 // ServiceCreateReport 创建一个日报
@@ -22,7 +22,7 @@ func ServiceCreateReport(userID, teamIdStr, done, toDo, problem string, context 
 		return
 	}
 
-	_, err = user.SelectOneMember(teamID, userID)
+	_, err = daos.SelectOneMember(teamID, userID)
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest,
@@ -106,7 +106,7 @@ func ServiceGetTeamRep(teamIdStr, userID string, context *gin.Context) {
 		return
 	}
 
-	_, err = user.SelectOneMember(teamID, userID)
+	_, err = daos.SelectOneMember(teamID, userID)
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest,

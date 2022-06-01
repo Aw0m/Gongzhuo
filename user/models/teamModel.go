@@ -1,4 +1,4 @@
-package user
+package models
 
 type Team struct {
 	TeamID    int64  `json:"teamID"`

@@ -1,4 +1,4 @@
-package user
+package daos
 
 import (
 	"database/sql"
@@ -7,10 +7,11 @@ import (
 	"log"
 	"strconv"
 	"wxProjectDev/public"
-	"wxProjectDev/utils"
+	"wxProjectDev/public/utils"
+	"wxProjectDev/user/models"
 )
 
-func createTeam(creatorID, teamName string) (int64, error) {
+func CreateTeam(creatorID, teamName string) (int64, error) {
 	utils.SetMachineId(0)
 	teamID := utils.GetSnowflakeId()
 
@@ -21,8 +22,8 @@ func createTeam(creatorID, teamName string) (int64, error) {
 		trans.Rollback()
 		return -1, fmt.Errorf("add: %v", err)
 	}
-	creator, _ := selectUser(creatorID)
-	err = createMember(teamID, creatorID, creator.userName, true)
+	creator, _ := SelectUser(creatorID)
+	err = CreateMember(teamID, creatorID, creator.UserName, true)
 	if err != nil {
 		trans.Rollback()
 		log.Println(err)
@@ -33,7 +34,7 @@ func createTeam(creatorID, teamName string) (int64, error) {
 	return teamID, nil
 }
 
-func updateTeam(teamID int64, teamName string) error {
+func UpdateTeam(teamID int64, teamName string) error {
 	_, err := public.DB.Exec("UPDATE team SET teamName = ? WHERE teamID = ?", teamName, teamID)
 	if err != nil {
 		log.Println("update team，出现错误！")
@@ -42,8 +43,8 @@ func updateTeam(teamID int64, teamName string) error {
 	return nil
 }
 
-func selectTeam(teamID int64) (Team, error) {
-	var team Team
+func SelectTeam(teamID int64) (models.Team, error) {
+	var team models.Team
 	row := public.DB.QueryRow("SELECT * FROM team WHERE teamID = ?", teamID)
 	if err := row.Scan(&team.TeamID, &team.TeamName, &team.CreatorID); err != nil {
 		if err == sql.ErrNoRows {
@@ -55,7 +56,7 @@ func selectTeam(teamID int64) (Team, error) {
 	return team, nil
 }
 
-func createMember(teamID int64, userID string, userName string, admin bool) error {
+func CreateMember(teamID int64, userID string, userName string, admin bool) error {
 	_, err := public.DB.Exec("INSERT INTO member (teamID, userID, userName, admin) VALUE (?, ?, ?, ?)", teamID, userID, userName, admin)
 	if err != nil {
 		log.Println("create member，出现错误！")
@@ -64,8 +65,8 @@ func createMember(teamID int64, userID string, userName string, admin bool) erro
 	return nil
 }
 
-//TODO 需要修改一下表结构，删除 userName。 使得selectTeamMembers依然返回正常的 []Member
-func selectTeamMembers(teamID int64) ([]MemberStr, error) {
+// SelectTeamMembers TODO 需要修改一下表结构，删除 userName。 使得selectTeamMembers依然返回正常的 []Member
+func SelectTeamMembers(teamID int64) ([]models.MemberStr, error) {
 	rows, err := public.DB.Query("SELECT teamID, userID, admin FROM member WHERE teamID = ?", teamID)
 	if err != nil {
 		log.Println("select member 出现错误", err.Error())
@@ -73,9 +74,9 @@ func selectTeamMembers(teamID int64) ([]MemberStr, error) {
 	}
 	defer rows.Close()
 
-	var members []MemberStr
+	var members []models.MemberStr
 	for rows.Next() {
-		var member MemberStr
+		var member models.MemberStr
 		if err := rows.Scan(&member.TeamID, &member.UserID, &member.Admin); err != nil {
 			log.Fatal(err)
 		}
@@ -84,8 +85,8 @@ func selectTeamMembers(teamID int64) ([]MemberStr, error) {
 	return members, nil
 }
 
-func SelectOneMember(teamID int64, userID string) (Member, error) {
-	var member Member
+func SelectOneMember(teamID int64, userID string) (models.Member, error) {
+	var member models.Member
 	row := public.DB.QueryRow("SELECT * FROM member WHERE teamID = ? AND userID = ?", teamID, userID)
 	if err := row.Scan(&member.TeamID, &member.UserID, &member.UserName, &member.Admin); err != nil {
 		log.Println("select one member，出现错误！")
@@ -94,7 +95,7 @@ func SelectOneMember(teamID int64, userID string) (Member, error) {
 	return member, nil
 }
 
-func getTeamCode(teamID int64) (string, error) {
+func GetTeamCode(teamID int64) (string, error) {
 	//ctx := context.Background()
 	val, err := public.RDS.Get(public.CTX, strconv.FormatInt(teamID, 10)).Result()
 	if err == redis.Nil {
@@ -107,7 +108,7 @@ func getTeamCode(teamID int64) (string, error) {
 	return val, nil
 }
 
-func setTeamCode(teamID int64, code string) error {
+func SetTeamCode(teamID int64, code string) error {
 	//ctx := context.Background()
 	_, err := public.RDS.Set(public.CTX, strconv.FormatInt(teamID, 10), code, 0).Result()
 	if err != nil {
@@ -116,7 +117,7 @@ func setTeamCode(teamID int64, code string) error {
 	return nil
 }
 
-func selectUserMembers(userID string) ([]Member, error) {
+func SelectUserMembers(userID string) ([]models.Member, error) {
 	rows, err := public.DB.Query("SELECT * FROM member WHERE userID = ?", userID)
 	if err != nil {
 		log.Println("select member 出现错误", err.Error())
@@ -124,9 +125,9 @@ func selectUserMembers(userID string) ([]Member, error) {
 	}
 	defer rows.Close()
 
-	var members []Member
+	var members []models.Member
 	for rows.Next() {
-		var member Member
+		var member models.Member
 		if err := rows.Scan(&member.TeamID, &member.UserID, &member.UserName, &member.Admin); err != nil {
 			log.Fatal(err)
 		}
@@ -135,7 +136,7 @@ func selectUserMembers(userID string) ([]Member, error) {
 	return members, nil
 }
 
-func setAdmin(userID string, teamID int64) error {
+func SetAdmin(userID string, teamID int64) error {
 	_, err := public.DB.Exec("UPDATE member SET admin = true WHERE userID = ? AND teamID = ?", userID, teamID)
 	return err
 }
