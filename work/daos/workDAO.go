@@ -1,4 +1,4 @@
-package work
+package daos
 
 import (
 	"database/sql"
@@ -7,9 +7,10 @@ import (
 	"time"
 	"wxProjectDev/public"
 	"wxProjectDev/public/utils"
+	"wxProjectDev/work/models"
 )
 
-func createReport(userID string, teamID int64, done, toDo, problem string) (int64, error) {
+func CreateReport(userID string, teamID int64, done, toDo, problem string) (int64, error) {
 	utils.SetMachineId(0)
 	repID := utils.GetSnowflakeId()
 	repDate := time.Now().Local()
@@ -25,8 +26,8 @@ func createReport(userID string, teamID int64, done, toDo, problem string) (int6
 	return repID, nil
 }
 
-func selectReport(repID int64) (Report, error) {
-	var report Report
+func SelectReport(repID int64) (models.Report, error) {
+	var report models.Report
 	var repDateStr string
 	row := public.DB.QueryRow("SELECT * FROM report WHERE reportID = ?", repID)
 	if err := row.Scan(&report.ReportID, &report.UserID, &report.TeamID, &report.Done, &report.ToDO, &report.Problem, &repDateStr); err != nil {
@@ -41,7 +42,7 @@ func selectReport(repID int64) (Report, error) {
 	report.RepDate, _ = time.Parse("2006-01-02 15:04:05", repDateStr)
 	return report, nil
 }
-func selectAllRep(teamID int64) ([]Report, error) {
+func SelectAllRep(teamID int64) ([]models.Report, error) {
 	rows, err := public.DB.Query("SELECT reportID, userID, repDate FROM report WHERE teamID = ?", teamID)
 	if err != nil {
 		log.Println("查询指定teamID的report出现错误：", err.Error())
@@ -49,10 +50,10 @@ func selectAllRep(teamID int64) ([]Report, error) {
 	}
 	defer rows.Close()
 
-	var reports []Report
+	var reports []models.Report
 	var timeStrTemp string
 	for rows.Next() {
-		var rep Report
+		var rep models.Report
 		if err := rows.Scan(&rep.ReportID, &rep.UserID, &timeStrTemp); err != nil {
 			log.Fatal(err)
 		}
@@ -62,7 +63,7 @@ func selectAllRep(teamID int64) ([]Report, error) {
 	return reports, nil
 }
 
-func getUserName(userID string) (string, error) {
+func GetUserName(userID string) (string, error) {
 	var userName string
 	row := public.DB.QueryRow("SELECT userName FROM user WHERE userID = ?", userID)
 	if err := row.Scan(&userName); err != nil {

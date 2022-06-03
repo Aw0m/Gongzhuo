@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 	"wxProjectDev/user/router"
-	"wxProjectDev/work"
+	"wxProjectDev/work/controllers"
 )
 
 var (
@@ -23,7 +23,7 @@ func main() {
 
 	server02 := &http.Server{
 		Addr:         ":8001",
-		Handler:      work.Controller(),
+		Handler:      controllers.Controller(),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}

@@ -1,9 +1,10 @@
-package work
+package controllers
 
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
+	"wxProjectDev/work/services"
 )
 
 func Controller() http.Handler {
@@ -37,18 +38,18 @@ func Controller() http.Handler {
 			done := context.PostForm("done")
 			toDo := context.PostForm("toDo")
 			problem := context.PostForm("problem")
-			ServiceCreateReport(userID, teamIdStr, done, toDo, problem, context)
+			services.ServiceCreateReport(userID, teamIdStr, done, toDo, problem, context)
 		})
 
 		v1.GET("/getReport", func(context *gin.Context) {
 			repIdStr := context.Query("repID")
-			ServiceGetReport(repIdStr, context)
+			services.ServiceGetReport(repIdStr, context)
 		})
 
 		v1.GET("/getReportInfos", func(context *gin.Context) {
 			userID := context.GetHeader("userID")
 			teamIdStr := context.Query("teamID")
-			ServiceGetTeamRep(teamIdStr, userID, context)
+			services.ServiceGetTeamRep(teamIdStr, userID, context)
 		})
 
 	}

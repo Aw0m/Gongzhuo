@@ -1,11 +1,13 @@
-package work
+package services
 
 import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-	"wxProjectDev/user/daos"
+	userDao "wxProjectDev/user/daos"
+	workDao "wxProjectDev/work/daos"
+	"wxProjectDev/work/models"
 )
 
 // ServiceCreateReport 创建一个日报
@@ -22,7 +24,7 @@ func ServiceCreateReport(userID, teamIdStr, done, toDo, problem string, context 
 		return
 	}
 
-	_, err = daos.SelectOneMember(teamID, userID)
+	_, err = userDao.SelectOneMember(teamID, userID)
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest,
@@ -34,7 +36,7 @@ func ServiceCreateReport(userID, teamIdStr, done, toDo, problem string, context 
 		return
 	}
 
-	repID, err := createReport(userID, teamID, done, toDo, problem)
+	repID, err := workDao.CreateReport(userID, teamID, done, toDo, problem)
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest,
@@ -72,7 +74,7 @@ func ServiceGetReport(repIDStr string, context *gin.Context) {
 	// 查询该report
 	var msg string
 	var resStatus int
-	rep, err := selectReport(repID)
+	rep, err := workDao.SelectReport(repID)
 	if err == sql.ErrNoRows {
 		msg = "未找到该reportID"
 		resStatus = http.StatusBadRequest
@@ -83,7 +85,6 @@ func ServiceGetReport(repIDStr string, context *gin.Context) {
 		msg = "ok"
 		resStatus = http.StatusOK
 	}
-	context.ShouldBindJSON(rep)
 	context.JSON(
 		resStatus,
 		gin.H{
@@ -106,7 +107,7 @@ func ServiceGetTeamRep(teamIdStr, userID string, context *gin.Context) {
 		return
 	}
 
-	_, err = daos.SelectOneMember(teamID, userID)
+	_, err = userDao.SelectOneMember(teamID, userID)
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest,
@@ -118,7 +119,7 @@ func ServiceGetTeamRep(teamIdStr, userID string, context *gin.Context) {
 		return
 	}
 
-	reports, err := selectAllRep(teamID)
+	reports, err := workDao.SelectAllRep(teamID)
 	if err != nil {
 		context.JSON(
 			http.StatusServiceUnavailable,
@@ -129,18 +130,16 @@ func ServiceGetTeamRep(teamIdStr, userID string, context *gin.Context) {
 		)
 		return
 	}
-	repInfos := make([]ReportInfo, 0, len(reports))
+	repInfos := make([]models.ReportInfo, 0, len(reports))
 	for _, rep := range reports {
-		var repInfoTemp = ReportInfo{
-			rep.ReportID,
-			rep.UserID,
-			"",
-			rep.RepDate,
+		var repInfoTemp = models.ReportInfo{
+			ReportID: rep.ReportID,
+			UserID:   rep.UserID,
+			RepDate:  rep.RepDate,
 		}
-		repInfoTemp.UserName, _ = getUserName(rep.UserID)
+		repInfoTemp.UserName, _ = workDao.GetUserName(rep.UserID)
 		repInfos = append(repInfos, repInfoTemp)
 	}
-	context.ShouldBindJSON(repInfos)
 	context.JSON(
 		http.StatusOK,
 		gin.H{
