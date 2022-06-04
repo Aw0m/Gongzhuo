@@ -38,7 +38,8 @@ func Controller() http.Handler {
 			done := context.PostForm("done")
 			toDo := context.PostForm("toDo")
 			problem := context.PostForm("problem")
-			services.ServiceCreateReport(userID, teamIdStr, done, toDo, problem, context)
+			repType := context.PostForm("repType")
+			services.ServiceCreateReport(userID, teamIdStr, done, toDo, problem, repType, context)
 		})
 
 		v1.GET("/getReport", func(context *gin.Context) {

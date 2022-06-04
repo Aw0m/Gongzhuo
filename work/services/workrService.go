@@ -11,7 +11,7 @@ import (
 )
 
 // ServiceCreateReport 创建一个日报
-func ServiceCreateReport(userID, teamIdStr, done, toDo, problem string, context *gin.Context) {
+func ServiceCreateReport(userID, teamIdStr, done, toDo, problem, repType string, context *gin.Context) {
 	teamID, err := strconv.ParseInt(teamIdStr, 10, 64)
 	if err != nil {
 		context.JSON(
@@ -36,12 +36,12 @@ func ServiceCreateReport(userID, teamIdStr, done, toDo, problem string, context 
 		return
 	}
 
-	repID, err := workDao.CreateReport(userID, teamID, done, toDo, problem)
+	repID, err := workDao.CreateReport(userID, teamID, done, toDo, problem, repType)
 	if err != nil {
 		context.JSON(
 			http.StatusBadRequest,
 			gin.H{
-				"msg":   "error",
+				"msg":   "error" + err.Error(),
 				"repID": strconv.FormatInt(repID, 10),
 			},
 		)
@@ -136,6 +136,7 @@ func ServiceGetTeamRep(teamIdStr, userID string, context *gin.Context) {
 			ReportID: rep.ReportID,
 			UserID:   rep.UserID,
 			RepDate:  rep.RepDate,
+			Type:     rep.Type,
 		}
 		repInfoTemp.UserName, _ = workDao.GetUserName(rep.UserID)
 		repInfos = append(repInfos, repInfoTemp)

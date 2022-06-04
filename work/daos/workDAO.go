@@ -10,14 +10,14 @@ import (
 	"wxProjectDev/work/models"
 )
 
-func CreateReport(userID string, teamID int64, done, toDo, problem string) (int64, error) {
+func CreateReport(userID string, teamID int64, done, toDo, problem, repType string) (int64, error) {
 	utils.SetMachineId(0)
 	repID := utils.GetSnowflakeId()
 	repDate := time.Now().Local()
 
 	_, err := public.DB.Exec(
-		"INSERT INTO report (reportID, userID, teamID, done, toDo, problem, repDate) VALUES (?, ?, ?, ?, ?, ?, ?)",
-		repID, userID, teamID, done, toDo, problem, repDate)
+		"INSERT INTO report (reportID, userID, teamID, done, toDo, problem, repDate, repType) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+		repID, userID, teamID, done, toDo, problem, repDate, repType)
 	if err != nil {
 		log.Println("创建report时出现问题")
 		return -1, err
@@ -30,7 +30,7 @@ func SelectReport(repID int64) (models.Report, error) {
 	var report models.Report
 	var repDateStr string
 	row := public.DB.QueryRow("SELECT * FROM report WHERE reportID = ?", repID)
-	if err := row.Scan(&report.ReportID, &report.UserID, &report.TeamID, &report.Done, &report.ToDO, &report.Problem, &repDateStr); err != nil {
+	if err := row.Scan(&report.ReportID, &report.UserID, &report.TeamID, &report.Done, &report.ToDO, &report.Problem, &repDateStr, &report.Type); err != nil {
 		log.Printf("error: %v\n", err)
 		if err == sql.ErrNoRows {
 			log.Printf("no such userID: %d\n", repID)
@@ -43,7 +43,7 @@ func SelectReport(repID int64) (models.Report, error) {
 	return report, nil
 }
 func SelectAllRep(teamID int64) ([]models.Report, error) {
-	rows, err := public.DB.Query("SELECT reportID, userID, repDate FROM report WHERE teamID = ?", teamID)
+	rows, err := public.DB.Query("SELECT reportID, userID, repDate, repType FROM report WHERE teamID = ?", teamID)
 	if err != nil {
 		log.Println("查询指定teamID的report出现错误：", err.Error())
 		return nil, err
@@ -54,7 +54,7 @@ func SelectAllRep(teamID int64) ([]models.Report, error) {
 	var timeStrTemp string
 	for rows.Next() {
 		var rep models.Report
-		if err := rows.Scan(&rep.ReportID, &rep.UserID, &timeStrTemp); err != nil {
+		if err := rows.Scan(&rep.ReportID, &rep.UserID, &timeStrTemp, &rep.Type); err != nil {
 			log.Fatal(err)
 		}
 		rep.RepDate, _ = time.Parse("2006-01-02 15:04:05", timeStrTemp)

@@ -10,6 +10,7 @@ type Report struct {
 	ToDO     string    `json:"todo"`
 	Problem  string    `json:"problem"`
 	RepDate  time.Time `json:"repDate"`
+	Type     string    `json:"type"`
 }
 
 type ReportInfo struct {
@@ -17,4 +18,5 @@ type ReportInfo struct {
 	UserID   string    `json:"userID"`
 	UserName string    `json:"userName"`
 	RepDate  time.Time `json:"repDate"`
+	Type     string    `json:"type"`
 }
