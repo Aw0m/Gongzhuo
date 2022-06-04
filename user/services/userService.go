@@ -13,7 +13,7 @@ import (
 
 // ServiceLogin 用户登录服务，生成Token。并且在数据库中检索该用户是否已经注册，如果没有则还会在数据库中创建该用户
 func ServiceLogin(code, userName string, context *gin.Context) {
-	url := "https://api.weixin.qq.com/sns/jscode2session?appid=wx351cbd21ad881ad9&secret=eb43225a92bc2e7eb50a9555c0d38fbf&js_code=" + code + "&grant_type=authorization_code"
+	url := "https://api.weixin.qq.com/sns/jscode2session?appid=wxf02df1739164ba92&secret=35ca848d9e2f3ba0b88ff9eedc4b2eb2&js_code=" + code + "&grant_type=authorization_code"
 	var httpCode int
 	var resError any
 	var token string
