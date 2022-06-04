@@ -10,6 +10,7 @@ func ConLogin(context *gin.Context) {
 	code := context.PostForm("code")
 	userName := context.PostForm("userName")
 	log.Println("code is ", code, userName)
+	services.ServiceLogin(code, userName, context)
 }
 
 func ConUpdateUserName(context *gin.Context) {
