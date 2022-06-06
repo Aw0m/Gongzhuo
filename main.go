@@ -1,13 +1,13 @@
 package main
 
 import (
+	"GinGateway/service/registry"
 	"golang.org/x/sync/errgroup"
 	"log"
 	"net/http"
 	"time"
 	"wxProjectDev/user/router"
 	"wxProjectDev/work/controllers"
-	"wxprojectApiGateway/service/registry"
 )
 
 var (
@@ -33,7 +33,7 @@ func main() {
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
-	registry.Register("work", "127.0.0.1", "8001", time.Second*2)
+	registry.Register("work", "localhost", "8001", time.Second*2)
 
 	g.Go(func() error {
 		return server01.ListenAndServe()

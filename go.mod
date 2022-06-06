@@ -2,16 +2,16 @@ module wxProjectDev
 
 go 1.18
 
-replace wxprojectApiGateway => github.com/Aw0m/wxprojectApiGateway v1.0.1
+replace GinGateway => github.com/Aw0m/GinGateway v1.1.0
 
 require (
+	GinGateway v0.0.0-00010101000000-000000000000
 	github.com/gin-gonic/gin v1.8.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 	gopkg.in/yaml.v2 v2.4.0
-	wxprojectApiGateway v1.0.1
 )
 
 require (

@@ -20,12 +20,12 @@ func Controller() http.Handler {
 		)
 	})
 
-	e.GET("/test", func(context *gin.Context) {
+	e.GET("/api/work/test/hello/:name", func(context *gin.Context) {
 		time.Sleep(time.Millisecond * 5)
 		context.JSON(
 			http.StatusOK,
 			gin.H{
-				"msg": "ok",
+				"msg": "hello " + context.Param("name"),
 			},
 		)
 	})
