@@ -56,8 +56,49 @@ func ServiceCreateReport(userID, teamIdStr, done, toDo, problem, repType string,
 	}
 }
 
-// ServiceGetReport 获取单个日报的详细内容
-func ServiceGetReport(repIDStr string, context *gin.Context) {
+func UpdateReport(userID, repIdStr, done, toDo, problem string, context *gin.Context) {
+	// 查询repID是否为int64
+	repID, err := strconv.ParseInt(repIdStr, 10, 64)
+	if err != nil {
+		context.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"msg":   "repID不为 int64",
+				"repID": "",
+			},
+		)
+		return
+	}
+	rep, err := workDao.SelectReport(repID)
+	if rep.UserID != userID {
+		context.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"msg": "report 与 user 不匹配！",
+			},
+		)
+		return
+	}
+
+	if err = workDao.UpdateRep(repID, done, toDo, problem); err != nil {
+		context.JSON(
+			http.StatusServiceUnavailable,
+			gin.H{
+				"msg": err.Error(),
+			},
+		)
+	} else {
+		context.JSON(
+			http.StatusOK,
+			gin.H{
+				"msg": "ok",
+			},
+		)
+	}
+}
+
+// GetReport 获取单个日报的详细内容
+func GetReport(repIDStr string, context *gin.Context) {
 	// 查询repID是否为int64
 	repID, err := strconv.ParseInt(repIDStr, 10, 64)
 	if err != nil {

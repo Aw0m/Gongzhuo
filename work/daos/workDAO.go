@@ -75,3 +75,14 @@ func GetUserName(userID string) (string, error) {
 	}
 	return userName, nil
 }
+
+func UpdateRep(repID int64, done, toDo, problem string) error {
+	repDate := time.Now().Local()
+	_, err := public.DB.Exec("UPDATE report SET done = ?, toDo = ?, problem = ?, repDate = ? WHERE reportID = ?",
+		done, toDo, problem, repDate, repID)
+	if err != nil {
+		log.Printf("更新rep错误!, 错误：%v", err.Error())
+		return err
+	}
+	return nil
+}
