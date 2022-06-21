@@ -2,7 +2,7 @@
 
 ## 1. 简介
 
-微信小程序“共琢”后端部分，实现了一个微服务后端。网关代码见[Aw0m/WxProjectApiGateway](https://github.com/Aw0m/wxprojectApiGateway)
+微信小程序“共琢”后端部分，实现了一个微服务后端。网关代码见[Aw0m/GinGateway](https://github.com/Aw0m/GinGateway)
 
 ## 2. 部分配置
 
