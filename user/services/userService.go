@@ -18,6 +18,7 @@ func ServiceLogin(code, userName string, context *gin.Context) {
 	var resError any
 	var token string
 	var openid string
+	createUser := false
 
 	timeStart := time.Now()
 	// 通过code获取用户的唯一标识符openid
@@ -38,6 +39,7 @@ func ServiceLogin(code, userName string, context *gin.Context) {
 			if _, err := daos.SelectUser(openid); err == sql.ErrNoRows {
 				log.Printf("生成用户：%s\n", userName)
 				err = daos.CreateUser(openid, userName)
+				createUser = true
 			}
 			if err != nil {
 				log.Println(err)
@@ -51,9 +53,10 @@ func ServiceLogin(code, userName string, context *gin.Context) {
 	context.JSON(
 		httpCode,
 		gin.H{
-			"error":  resError,
-			"token":  token,
-			"openid": openid,
+			"error":      resError,
+			"token":      token,
+			"openid":     openid,
+			"createUser": createUser,
 		},
 	)
 }
