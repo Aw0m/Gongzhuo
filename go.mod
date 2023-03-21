@@ -1,4 +1,4 @@
-module wxProjectDev
+module Gongzhuo
 
 go 1.18
 
