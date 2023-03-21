@@ -7,6 +7,3 @@
 ## 2. 部分配置
 
 `user/config/config.yaml`下配置`MySQL`和`Redis`的数据库信息
-
-## 3. 其他
-目前整体仍在开发中
